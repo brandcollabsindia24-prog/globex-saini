@@ -1,0 +1,249 @@
+.page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: 2.5rem 1rem;
+  background: linear-gradient(135deg, #0B0F19 0%, #1a1f2e 50%, #0B0F19 100%);
+}
+
+.glowOne,
+.glowTwo {
+  pointer-events: none;
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(56px);
+}
+
+.glowOne {
+  left: -5rem;
+  top: 2.5rem;
+  width: 16rem;
+  height: 16rem;
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.glowTwo {
+  right: -5rem;
+  bottom: 2.5rem;
+  width: 15rem;
+  height: 15rem;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.shell {
+  position: relative;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 72rem;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  border-radius: 1.5rem;
+  background: rgba(20, 27, 42, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  padding: 1.3rem;
+  color: #ffffff;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.panel:hover {
+  background: rgba(20, 27, 42, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+.panelBadge {
+  display: inline-flex;
+  border-radius: 9999px;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #ec4899;
+  background: rgba(236, 72, 153, 0.1);
+}
+
+.panelTitle {
+  margin-top: 1.25rem;
+  font-size: 1.75rem;
+  line-height: 1.16;
+  font-weight: 600;
+}
+
+.panelText {
+  margin-top: 0.85rem;
+  font-size: 0.95rem;
+  color: #cbd5e1;
+}
+
+.featureGrid {
+  margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.featureCard {
+  border-radius: 0.85rem;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.05);
+  padding: 0.75rem;
+  font-size: 0.87rem;
+  color: #b0b9c8;
+  transition: all 0.3s ease;
+}
+
+.featureCard:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.card {
+  border-radius: 1.5rem;
+  border: 1px solid rgba(236, 72, 153, 0.15);
+  background: rgba(20, 27, 42, 0.6);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: rgba(20, 27, 42, 0.8);
+  border-color: rgba(236, 72, 153, 0.3);
+  box-shadow: 0 0 20px rgba(236, 72, 153, 0.2);
+}
+
+.badge {
+  margin-bottom: 0.5rem;
+  display: inline-block;
+  border-radius: 9999px;
+  background: rgba(236, 72, 153, 0.1);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #ec4899;
+}
+
+.title {
+  margin: 0;
+  font-size: 2rem;
+  color: #ffffff;
+}
+
+.subtitle {
+  margin-top: 0.55rem;
+  font-size: 0.95rem;
+  color: #b0b9c8;
+}
+
+.form {
+  margin-top: 1.7rem;
+  display: grid;
+  gap: 1.05rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.label {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #b0b9c8;
+}
+
+.input {
+  width: 100%;
+  border-radius: 0.8rem;
+  border: 1px solid rgba(236, 72, 153, 0.2);
+  background: rgba(37, 43, 61, 0.6);
+  color: #ffffff;
+  padding: 0.68rem 0.78rem;
+  font-size: 0.92rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.input::placeholder {
+  color: #7a8497;
+}
+
+.input:focus {
+  border-color: #ec4899;
+  background: rgba(37, 43, 61, 0.8);
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.2);
+}
+
+.error {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #dc2626;
+}
+
+.primaryButton {
+  width: 100%;
+  border: none;
+  border-radius: 0.8rem;
+  background: #0f172a;
+  color: #ffffff;
+  padding: 0.72rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.primaryButton:hover {
+  transform: translateY(-2px);
+  background: #1e293b;
+}
+
+.footerText {
+  margin-top: 1.25rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.footerLink {
+  font-weight: 700;
+  color: #be123c;
+  text-decoration: none;
+}
+
+.footerLink:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 900px) {
+  .shell {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .panel {
+    padding: 2rem;
+  }
+
+  .panelTitle {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .featureGrid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,183 @@
+.contactsPage {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0B0F19 0%, #1a1f2e 100%);
+  padding: 24px;
+}
+
+.pageTitle {
+  text-align: center;
+  margin-top: 36px;
+  margin-bottom: 22px;
+  font-size: 30px;
+  background: linear-gradient(135deg, #3B82F6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.topBar {
+  max-width: 1280px;
+  margin: 0 auto 18px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.filterButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filterButtons button {
+  border: none;
+  border-radius: 10px;
+  padding: 9px 14px;
+  background: rgba(26, 31, 46, 0.6);
+  color: #b0b9c8;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  transition: all 0.3s ease;
+}
+
+.filterButtons button.active,
+.filterButtons button:hover {
+  background: rgba(59, 130, 246, 0.2);
+  color: #ffffff;
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+.active {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #ffffff !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+}
+
+.searchBox input {
+  width: 300px;
+  max-width: 100%;
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+  background: rgba(26, 31, 46, 0.6);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+}
+
+.searchBox input:focus {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.emptyText {
+  text-align: center;
+  color: #7a8497;
+  margin-top: 24px;
+}
+
+.cardGrid {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.card {
+  background: rgba(26, 31, 46, 0.6);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  background: rgba(26, 31, 46, 0.8);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  transform: translateY(-3px);
+}
+
+.cardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.badgeBrand,
+.badgeInfluencer {
+  border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.badgeBrand {
+  background: rgba(59, 130, 246, 0.2);
+  color: #a8d4ff;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badgeInfluencer {
+  background: rgba(139, 92, 246, 0.2);
+  color: #d8bfd8;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.dateText {
+  font-size: 11px;
+  color: #7a8497;
+}
+
+.name {
+  font-size: 18px;
+  margin-bottom: 8px;
+  color: #ffffff;
+}
+
+.text {
+  font-size: 13px;
+  line-height: 1.45;
+  color: #b0b9c8;
+  margin-bottom: 5px;
+}
+
+.message {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: #b0b9c8;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1000px) {
+  .cardGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .contactsPage {
+    padding: 14px;
+  }
+
+  .pageTitle {
+    margin-top: 18px;
+    font-size: 24px;
+  }
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+}
