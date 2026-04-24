@@ -14,7 +14,16 @@ const campaignApplicationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["applied", "shortlisted", "accepted", "rejected", "completed"],
+      enum: [
+        "applied",
+        "shortlisted",
+        "accepted",
+        "in_progress",
+        "submitted",
+        "revision_required",
+        "completed",
+        "rejected",
+      ],
       default: "applied",
     },
     paymentStatus: {
@@ -32,6 +41,11 @@ const campaignApplicationSchema = new mongoose.Schema(
       default: null,
     },
     contentSubmission: {
+      reelLink: {
+        type: String,
+        default: "",
+        trim: true,
+      },
       postLink: {
         type: String,
         default: "",
@@ -42,7 +56,12 @@ const campaignApplicationSchema = new mongoose.Schema(
         default: "",
         trim: true,
       },
-      note: {
+      caption: {
+        type: String,
+        default: "",
+        trim: true,
+      },
+      feedback: {
         type: String,
         default: "",
         trim: true,
@@ -56,6 +75,11 @@ const campaignApplicationSchema = new mongoose.Schema(
         type: Date,
         default: null,
       },
+    },
+    rejectionReason: {
+      type: String,
+      default: "",
+      trim: true,
     },
     influencerRatingToBrand: {
       type: Number,

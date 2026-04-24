@@ -21,7 +21,15 @@ const storage = multer.diskStorage({
   },
 });
 
-const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
+const imageOrVideoFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
+  if (!file.mimetype.startsWith("image/") && !file.mimetype.startsWith("video/")) {
+    cb(new Error("Only image or video files are allowed"));
+    return;
+  }
+  cb(null, true);
+};
+
+const imageOnlyFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
   if (!file.mimetype.startsWith("image/")) {
     cb(new Error("Only image files are allowed"));
     return;
@@ -31,8 +39,16 @@ const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
 
 export const uploadCampaignImage = multer({
   storage,
-  fileFilter,
+  fileFilter: imageOnlyFilter,
   limits: {
     fileSize: 5 * 1024 * 1024,
+  },
+});
+
+export const uploadSubmissionFiles = multer({
+  storage,
+  fileFilter: imageOrVideoFilter,
+  limits: {
+    fileSize: 12 * 1024 * 1024,
   },
 });

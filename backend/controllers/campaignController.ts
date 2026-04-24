@@ -6,11 +6,45 @@ import WalletWithdrawal from "../models/WalletWithdrawal";
 import InfluencerProfile from "../models/InfluencerProfile";
 import mongoose from "mongoose";
 
-const APP_STATUSES = ["applied", "shortlisted", "accepted", "rejected", "completed"];
+const APP_STATUSES = [
+  "applied",
+  "shortlisted",
+  "accepted",
+  "in_progress",
+  "submitted",
+  "revision_required",
+  "completed",
+  "rejected",
+];
 const PROFILE_REQUIRED_FIELDS = ["fullName", "email", "profileImage", "city", "district", "state", "pincode"];
 
 function isInfluencerProfileComplete(profile: any): boolean {
   return PROFILE_REQUIRED_FIELDS.every((field) => String(profile?.[field] || "").trim().length > 0);
+}
+
+function getUploadedFileUrl(file: any, req: any): string {
+  if (!file || !file.filename) return "";
+  return `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+}
+
+function mergeSubmissionValues(req: any): {
+  reelLink: string;
+  postLink: string;
+  screenshotLink: string;
+  caption: string;
+  feedback?: string;
+} {
+  const reelFile = req.files?.reelFile?.[0];
+  const postFile = req.files?.postFile?.[0];
+  const screenshotFile = req.files?.screenshotFile?.[0];
+
+  return {
+    reelLink: reelFile ? getUploadedFileUrl(reelFile, req) : String(req.body.reelLink || "").trim(),
+    postLink: postFile ? getUploadedFileUrl(postFile, req) : String(req.body.postLink || "").trim(),
+    screenshotLink: screenshotFile ? getUploadedFileUrl(screenshotFile, req) : String(req.body.screenshotLink || "").trim(),
+    caption: String(req.body.caption || "").trim(),
+    feedback: req.body.feedback ? String(req.body.feedback).trim() : "",
+  };
 }
 
 function extractNumberOfInfluencersFromDescription(description: string): number {
@@ -126,9 +160,11 @@ export const getBrandCampaignApplications = async (req: any, res: any) => {
         paymentStatus: application.paymentStatus || "pending",
         paymentAmount: Number(application.paymentAmount || 0),
         contentSubmission: {
+          reelLink: application.contentSubmission?.reelLink || "",
           postLink: application.contentSubmission?.postLink || "",
           screenshotLink: application.contentSubmission?.screenshotLink || "",
-          note: application.contentSubmission?.note || "",
+          caption: application.contentSubmission?.caption || "",
+          feedback: application.contentSubmission?.feedback || "",
           approvalStatus: application.contentSubmission?.approvalStatus || "not_submitted",
           submittedAt: application.contentSubmission?.submittedAt || null,
         },
@@ -631,17 +667,26 @@ export const updateApplicationProgress = async (req: any, res: any) => {
     }
 
     if (contentApprovalStatus !== undefined) {
-      if (!["approved", "changes_requested", "submitted", "not_submitted"].includes(String(contentApprovalStatus))) {
+      const normalizedContentStatus = String(contentApprovalStatus).trim().toLowerCase();
+      if (!["approved", "changes_requested", "submitted", "not_submitted"].includes(normalizedContentStatus)) {
         return res.status(400).json({ message: "Invalid contentApprovalStatus value" });
       }
 
-      updatePayload["contentSubmission.approvalStatus"] = contentApprovalStatus;
+      updatePayload["contentSubmission.approvalStatus"] = normalizedContentStatus;
+
+      if (normalizedContentStatus === "approved") {
+        updatePayload.status = "completed";
+      } else if (normalizedContentStatus === "changes_requested") {
+        updatePayload.status = "revision_required";
+      } else if (normalizedContentStatus === "submitted" && application.status === "in_progress") {
+        updatePayload.status = "submitted";
+      }
 
       await Notification.create({
         influencerId: application.influencerId,
         title: "Content submission updated",
         message:
-          contentApprovalStatus === "approved"
+          normalizedContentStatus === "approved"
             ? "Your submitted campaign content has been approved."
             : "Your submitted campaign content needs changes.",
         type: "content",
@@ -762,28 +807,225 @@ export const submitCampaignContent = async (req: any, res: any) => {
     }
 
     const { applicationId } = req.params;
-    const { postLink, screenshotLink, note } = req.body;
+    const application = await CampaignApplication.findOne({ _id: applicationId, influencerId: req.user.id });
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
 
+    if (!["in_progress", "revision_required", "accepted"].includes(String(application.status))) {
+      return res.status(400).json({ message: "Content can be submitted only for active campaigns in progress or under revision" });
+    }
+
+    const submission = mergeSubmissionValues(req);
+    application.contentSubmission = {
+      reelLink: submission.reelLink || "",
+      postLink: submission.postLink || "",
+      screenshotLink: submission.screenshotLink || "",
+      caption: submission.caption || "",
+      feedback: application.contentSubmission?.feedback || "",
+      approvalStatus: "submitted",
+      submittedAt: new Date(),
+    } as any;
+    application.status = "submitted";
+
+    await application.save();
+
+    return res.status(200).json({ message: "Content submitted for approval", application });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const resubmitCampaignContent = async (req: any, res: any) => {
+  try {
+    if (req.user?.role !== "influencer") {
+      return res.status(403).json({ message: "Only influencers can resubmit content" });
+    }
+
+    const { applicationId } = req.params;
+    const application = await CampaignApplication.findOne({ _id: applicationId, influencerId: req.user.id });
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    if (application.status !== "revision_required") {
+      return res.status(400).json({ message: "Resubmission is allowed only when revision is required" });
+    }
+
+    const submission = mergeSubmissionValues(req);
+    application.contentSubmission = {
+      reelLink: submission.reelLink || application.contentSubmission?.reelLink || "",
+      postLink: submission.postLink || application.contentSubmission?.postLink || "",
+      screenshotLink: submission.screenshotLink || application.contentSubmission?.screenshotLink || "",
+      caption: submission.caption || application.contentSubmission?.caption || "",
+      feedback: application.contentSubmission?.feedback || "",
+      approvalStatus: "submitted",
+      submittedAt: new Date(),
+    } as any;
+    application.status = "submitted";
+
+    await application.save();
+
+    return res.status(200).json({ message: "Content resubmitted for approval", application });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const startInfluencerWork = async (req: any, res: any) => {
+  try {
+    if (req.user?.role !== "influencer") {
+      return res.status(403).json({ message: "Only influencers can start work" });
+    }
+
+    const { applicationId } = req.params;
     const application = await CampaignApplication.findOne({ _id: applicationId, influencerId: req.user.id });
     if (!application) {
       return res.status(404).json({ message: "Application not found" });
     }
 
     if (application.status !== "accepted") {
-      return res.status(400).json({ message: "Content can be submitted only for accepted campaigns" });
+      return res.status(400).json({ message: "Work can only be started for accepted applications" });
     }
 
+    application.status = "in_progress";
+    await application.save();
+
+    return res.status(200).json({ message: "Work started", application });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const requestRevision = async (req: any, res: any) => {
+  try {
+    const role = req.user?.role;
+    if (!role || (role !== "brand" && role !== "admin")) {
+      return res.status(403).json({ message: "Only brand or admin can request revisions" });
+    }
+
+    const { applicationId } = req.params;
+    const { feedback } = req.body;
+
+    const application = await CampaignApplication.findById(applicationId).populate({
+      path: "campaignId",
+      select: "brandId",
+    });
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    if (role === "brand") {
+      const campaignOwnerId = String((application.campaignId as any)?.brandId || "");
+      if (campaignOwnerId !== String(req.user.id)) {
+        return res.status(403).json({ message: "You can update only your campaign applications" });
+      }
+    }
+
+    application.status = "revision_required";
     application.contentSubmission = {
-      postLink: postLink || "",
-      screenshotLink: screenshotLink || "",
-      note: note || "",
-      approvalStatus: "submitted",
-      submittedAt: new Date(),
+      ...application.contentSubmission,
+      approvalStatus: "changes_requested",
+      feedback: String(feedback || "Please update your content and resubmit.").trim(),
     } as any;
 
     await application.save();
 
-    return res.status(200).json({ message: "Content submitted for approval", application });
+    await Notification.create({
+      influencerId: application.influencerId,
+      title: "Revision requested",
+      message: application.contentSubmission.feedback,
+      type: "content",
+    });
+
+    return res.status(200).json({ message: "Revision requested", application });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const approveInfluencerWork = async (req: any, res: any) => {
+  try {
+    const role = req.user?.role;
+    if (!role || (role !== "brand" && role !== "admin")) {
+      return res.status(403).json({ message: "Only brand or admin can approve work" });
+    }
+
+    const { applicationId } = req.params;
+    const application = await CampaignApplication.findById(applicationId).populate({
+      path: "campaignId",
+      select: "brandId",
+    });
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    if (role === "brand") {
+      const campaignOwnerId = String((application.campaignId as any)?.brandId || "");
+      if (campaignOwnerId !== String(req.user.id)) {
+        return res.status(403).json({ message: "You can update only your campaign applications" });
+      }
+    }
+
+    application.status = "completed";
+    application.contentSubmission = {
+      ...application.contentSubmission,
+      approvalStatus: "approved",
+    } as any;
+
+    await application.save();
+
+    await Notification.create({
+      influencerId: application.influencerId,
+      title: "Work approved",
+      message: "Your campaign work has been approved.",
+      type: "content",
+    });
+
+    return res.status(200).json({ message: "Work approved", application });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const rejectInfluencerWork = async (req: any, res: any) => {
+  try {
+    const role = req.user?.role;
+    if (!role || (role !== "brand" && role !== "admin")) {
+      return res.status(403).json({ message: "Only brand or admin can reject work" });
+    }
+
+    const { applicationId } = req.params;
+    const { reason } = req.body;
+
+    const application = await CampaignApplication.findById(applicationId).populate({
+      path: "campaignId",
+      select: "brandId",
+    });
+    if (!application) {
+      return res.status(404).json({ message: "Application not found" });
+    }
+
+    if (role === "brand") {
+      const campaignOwnerId = String((application.campaignId as any)?.brandId || "");
+      if (campaignOwnerId !== String(req.user.id)) {
+        return res.status(403).json({ message: "You can update only your campaign applications" });
+      }
+    }
+
+    application.status = "rejected";
+    application.rejectionReason = String(reason || "Your submission was rejected.").trim();
+
+    await application.save();
+
+    await Notification.create({
+      influencerId: application.influencerId,
+      title: "Work rejected",
+      message: application.rejectionReason,
+      type: "content",
+    });
+
+    return res.status(200).json({ message: "Work rejected", application });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
   }

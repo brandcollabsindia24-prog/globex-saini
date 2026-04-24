@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import styles from "../../InfluencerDashboard.module.css";
@@ -15,6 +15,25 @@ const PLATFORM_ICON_META: Record<string, { label: string; icon: string }> = {
 };
 
 const PLATFORM_ORDER = ["instagram", "youtube", "facebook"] as const;
+
+function normalizeStatus(status: string, paymentStatus?: string): string {
+  const normalized = String(status || "").trim().toLowerCase();
+
+  if (normalized === "applied") return "pending";
+  if (normalized === "shortlisted") return "in_progress";
+  if (normalized === "accepted") {
+    // If payment is paid, show as in_progress
+    if (paymentStatus === "paid") return "in_progress";
+    return "accepted";
+  }
+  if (normalized === "in_progress") return "in_progress";
+  if (normalized === "submitted") return "submitted";
+  if (normalized === "revision_required") return "revision_required";
+  if (normalized === "completed") return "completed";
+  if (normalized === "rejected") return "rejected";
+
+  return "pending";
+}
 
 function readDetailLine(description: string, label: string): string {
   const match = description
@@ -73,6 +92,16 @@ export default function InfluencerCampaignDetailsPage() {
   const [verificationStatus, setVerificationStatus] = useState<"Pending" | "Approved" | "Rejected">("Pending");
   const [showCompleteProfilePrompt, setShowCompleteProfilePrompt] = useState(false);
   const [showVerificationPendingPrompt, setShowVerificationPendingPrompt] = useState(false);
+  const [userApplication, setUserApplication] = useState<any>(null);
+  const [showSubmissionForm, setShowSubmissionForm] = useState(false);
+  const submissionFormRef = useRef<HTMLDivElement>(null);
+  const [submissionFormData, setSubmissionFormData] = useState({
+    reelLink: "",
+    postLink: "",
+    caption: "",
+    screenshotFile: null as File | null,
+  });
+  const [submitting, setSubmitting] = useState(false);
 
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5000`;
@@ -90,13 +119,18 @@ export default function InfluencerCampaignDetailsPage() {
 
     const load = async () => {
       try {
-        const [campaignResponse, profileResponse] = await Promise.allSettled([
+        const [campaignResponse, profileResponse, applicationsResponse] = await Promise.allSettled([
           axios.get(`${apiBaseUrl}/api/campaigns/influencer/active`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
           axios.get(`${apiBaseUrl}/api/influencers/profile/${session.user.id || session.user._id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get(`${apiBaseUrl}/api/campaigns/influencer/applications`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -119,10 +153,22 @@ export default function InfluencerCampaignDetailsPage() {
           setIsProfileComplete(false);
           setVerificationStatus("Pending");
         }
+
+        if (applicationsResponse.status === "fulfilled") {
+          const applications = applicationsResponse.value.data?.applications || [];
+          const applicationForThisCampaign = applications.find((app: any) => app.campaignId?._id === params.campaignId);
+          setUserApplication(applicationForThisCampaign || null);
+          setApplied(!!applicationForThisCampaign);
+        } else {
+          setUserApplication(null);
+          setApplied(false);
+        }
       } catch {
         setCampaign(null);
         setIsProfileComplete(false);
         setVerificationStatus("Pending");
+        setUserApplication(null);
+        setApplied(false);
       } finally {
         setLoading(false);
       }
@@ -201,6 +247,94 @@ export default function InfluencerCampaignDetailsPage() {
     } finally {
       setApplying(false);
     }
+  };
+
+  const handleSubmitWork = async () => {
+    if (!userApplication || submitting) return;
+
+    const session = getAuthSession("influencer");
+    if (!session || session.user.role !== "influencer") {
+      router.replace("/influencer/login");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const formData = new FormData();
+      
+      if (submissionFormData.reelLink.trim()) formData.append("reelLink", submissionFormData.reelLink.trim());
+      if (submissionFormData.postLink.trim()) formData.append("postLink", submissionFormData.postLink.trim());
+      if (submissionFormData.caption.trim()) formData.append("caption", submissionFormData.caption.trim());
+      
+      if (submissionFormData.screenshotFile) formData.append("screenshotFile", submissionFormData.screenshotFile);
+
+      const response = await axios.patch(
+        `${apiBaseUrl}/api/campaigns/applications/${userApplication._id}/submit`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${session.token}`,
+          },
+        }
+      );
+
+      alert("Work submitted successfully!");
+      setShowSubmissionForm(false);
+      // Reset form
+      setSubmissionFormData({
+        reelLink: "",
+        postLink: "",
+        caption: "",
+        screenshotFile: null,
+      });
+      // Refresh the page or update state
+      window.location.reload();
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        alert(error.response?.data?.message || "Failed to submit work");
+      } else {
+        alert("Failed to submit work");
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const updateFormField = (field: keyof typeof submissionFormData, value: string | File | null) => {
+    setSubmissionFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Auto-scroll to form when it opens
+  useEffect(() => {
+    if (showSubmissionForm && submissionFormRef.current) {
+      // Small delay to ensure the form is rendered
+      setTimeout(() => {
+        submissionFormRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 100);
+    }
+  }, [showSubmissionForm]);
+
+  const isFormValid = () => {
+    const { reelLink, postLink, caption, screenshotFile } = submissionFormData;
+    
+    // Must have either reel URL OR post URL
+    const hasReelLink = reelLink.trim().length > 0;
+    const hasPostLink = postLink.trim().length > 0;
+    const hasContentLink = hasReelLink || hasPostLink;
+    
+    // Must have caption (required)
+    const hasCaption = caption.trim().length > 0;
+    
+    // Must have screenshot (required)
+    const hasScreenshot = !!screenshotFile;
+    
+    return hasContentLink && hasCaption && hasScreenshot;
   };
 
   if (loading) {
@@ -286,17 +420,127 @@ export default function InfluencerCampaignDetailsPage() {
                 )}
                 <p className={styles.detailLine}><span>Followers Required:</span> {campaign.followersRequired || 0}</p>
                 <p className={styles.detailLine}><span>Timeline:</span> {campaign.timeline || FALLBACK_VALUE}</p>
-                <button
-                  type="button"
-                  className={styles.applyBtn}
-                  disabled={applied || applying}
-                  onClick={handleApply}
-                >
-                  {applied ? "Applied" : applying ? "Applying..." : "Apply"}
-                </button>
+                {userApplication ? (
+                  userApplication.status === "in_progress" || (userApplication.status === "accepted" && userApplication.paymentStatus === "paid") ? (
+                    <button
+                      type="button"
+                      className={styles.applyBtn}
+                      onClick={() => setShowSubmissionForm(true)}
+                    >
+                      Submit Work
+                    </button>
+                  ) : null
+                ) : (
+                  <button
+                    type="button"
+                    className={styles.applyBtn}
+                    disabled={applied || applying}
+                    onClick={handleApply}
+                  >
+                    {applied ? "Applied" : applying ? "Applying..." : "Apply"}
+                  </button>
+                )}
               </section>
             </div>
           </article>
+        )}
+
+        {showSubmissionForm && userApplication && (
+          <div className={styles.submissionFormCard} ref={submissionFormRef}>
+            <div className={styles.submissionFormHeader}>
+              <h3>Submit Your Work</h3>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={() => setShowSubmissionForm(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className={styles.submissionFormGrid}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Reel URL <span className={styles.optionalText}>(provide if you created a reel)</span>
+                </label>
+                <input
+                  type="url"
+                  value={submissionFormData.reelLink}
+                  onChange={(e) => updateFormField("reelLink", e.target.value)}
+                  className={styles.formInput}
+                  placeholder="https://instagram.com/reel/..."
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Post Image URL <span className={styles.optionalText}>(provide if you created a post)</span>
+                </label>
+                <input
+                  type="url"
+                  value={submissionFormData.postLink}
+                  onChange={(e) => updateFormField("postLink", e.target.value)}
+                  className={styles.formInput}
+                  placeholder="https://instagram.com/p/..."
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Caption <span className={styles.requiredText}>*</span>
+                </label>
+                <textarea
+                  value={submissionFormData.caption}
+                  onChange={(e) => updateFormField("caption", e.target.value)}
+                  className={styles.formTextarea}
+                  placeholder="Write your post caption here"
+                  rows={4}
+                />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Upload Screenshot <span className={styles.requiredText}>*</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => updateFormField("screenshotFile", e.target.files?.[0] || null)}
+                  className={styles.fileInput}
+                />
+                {submissionFormData.screenshotFile && (
+                  <p className={styles.fileName}>Selected: {submissionFormData.screenshotFile.name}</p>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.formRequirements}>
+              <p className={styles.requirementsText}>
+                <span className={styles.requiredText}>*</span> Required fields: Caption and Screenshot
+              </p>
+              <p className={styles.requirementsText}>
+                <span className={styles.requiredText}>*</span> Must provide either Reel URL or Post Image URL
+              </p>
+            </div>
+
+            <div className={styles.submissionFormActions}>
+              <button
+                type="button"
+                className={styles.cancelBtn}
+                onClick={() => setShowSubmissionForm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.submitBtn}
+                onClick={handleSubmitWork}
+                disabled={submitting || !isFormValid()}
+              >
+                {submitting ? "Submitting..." : "Submit Work"}
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </section>

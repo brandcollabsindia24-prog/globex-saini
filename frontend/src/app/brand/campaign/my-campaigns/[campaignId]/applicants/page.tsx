@@ -17,9 +17,11 @@ type ApplicantItem = {
   paymentStatus?: "pending" | "paid";
   paymentAmount?: number;
   contentSubmission?: {
+    reelLink?: string;
     postLink?: string;
     screenshotLink?: string;
-    note?: string;
+    caption?: string;
+    feedback?: string;
     approvalStatus?: "not_submitted" | "submitted" | "approved" | "changes_requested";
     submittedAt?: string | null;
   };
@@ -114,12 +116,14 @@ function toClickableUrl(url?: string): string {
 }
 
 function hasSubmission(contentSubmission?: ApplicantItem["contentSubmission"]): boolean {
+  const reelLink = String(contentSubmission?.reelLink || "").trim();
   const postLink = String(contentSubmission?.postLink || "").trim();
-  const caption = String(contentSubmission?.note || "").trim();
+  const screenshotLink = String(contentSubmission?.screenshotLink || "").trim();
+  const caption = String(contentSubmission?.caption || "").trim();
   const submittedAt = String(contentSubmission?.submittedAt || "").trim();
   const approvalStatus = String(contentSubmission?.approvalStatus || "").trim().toLowerCase();
 
-  return Boolean(postLink || caption || submittedAt || (approvalStatus && approvalStatus !== "not_submitted"));
+  return Boolean(reelLink || postLink || screenshotLink || caption || submittedAt || (approvalStatus && approvalStatus !== "not_submitted"));
 }
 
 function formatSubmissionDate(value?: string | null): string {
@@ -365,12 +369,12 @@ export default function CampaignApplicantsPage() {
               ? {
                   ...item,
                   contentSubmission: {
+                    reelLink: updated.contentSubmission?.reelLink || item.contentSubmission?.reelLink || "",
                     postLink: updated.contentSubmission?.postLink || item.contentSubmission?.postLink || "",
-                    screenshotLink:
-                      updated.contentSubmission?.screenshotLink || item.contentSubmission?.screenshotLink || "",
-                    note: updated.contentSubmission?.note || item.contentSubmission?.note || "",
-                    approvalStatus:
-                      updated.contentSubmission?.approvalStatus || item.contentSubmission?.approvalStatus || "not_submitted",
+                    screenshotLink: updated.contentSubmission?.screenshotLink || item.contentSubmission?.screenshotLink || "",
+                    caption: updated.contentSubmission?.caption || item.contentSubmission?.caption || "",
+                    feedback: updated.contentSubmission?.feedback || item.contentSubmission?.feedback || "",
+                    approvalStatus: updated.contentSubmission?.approvalStatus || item.contentSubmission?.approvalStatus || "not_submitted",
                     submittedAt: updated.contentSubmission?.submittedAt || item.contentSubmission?.submittedAt || null,
                   },
                 }
@@ -561,8 +565,10 @@ export default function CampaignApplicantsPage() {
                   const isPaid = currentTab === "paid";
                   const submissionData = application.contentSubmission;
                   const submissionAvailable = hasSubmission(submissionData);
+                  const submissionReelLink = toClickableUrl(submissionData?.reelLink);
                   const submissionPostLink = toClickableUrl(submissionData?.postLink);
-                  const submissionCaption = formatValue(submissionData?.note);
+                  const submissionScreenshotLink = toClickableUrl(submissionData?.screenshotLink);
+                  const submissionCaption = formatValue(submissionData?.caption);
                   const submissionDate = formatSubmissionDate(submissionData?.submittedAt);
                   const submissionApproval = normalizeStatus(submissionData?.approvalStatus);
                   const submissionStatusMeta = getSubmissionStatusMeta(submissionApproval, submissionAvailable);
@@ -698,16 +704,54 @@ export default function CampaignApplicantsPage() {
 
                           {submissionAvailable ? (
                             <>
-                              <p className={influencerCardStyles.meta}>
-                                <span className={influencerCardStyles.metaLabel}>Post link:</span>{" "}
-                                <span className={influencerCardStyles.metaValue}>
-                                  {submissionPostLink ? submissionData?.postLink : DEFAULT_VALUE}
-                                </span>
-                              </p>
-                              <p className={influencerCardStyles.meta}>
-                                <span className={influencerCardStyles.metaLabel}>Caption:</span>{" "}
-                                <span className={influencerCardStyles.metaValue}>{submissionCaption}</span>
-                              </p>
+                              {submissionData?.reelLink ? (
+                                <p className={influencerCardStyles.meta}>
+                                  <span className={influencerCardStyles.metaLabel}>Reel link:</span>{" "}
+                                  <span className={influencerCardStyles.metaValue}>
+                                    {submissionReelLink ? (
+                                      <a href={submissionReelLink} target="_blank" rel="noopener noreferrer" className={influencerCardStyles.metaLink}>
+                                        {submissionData.reelLink}
+                                      </a>
+                                    ) : (
+                                      submissionData.reelLink
+                                    )}
+                                  </span>
+                                </p>
+                              ) : null}
+                              {submissionData?.postLink ? (
+                                <p className={influencerCardStyles.meta}>
+                                  <span className={influencerCardStyles.metaLabel}>Post link:</span>{" "}
+                                  <span className={influencerCardStyles.metaValue}>
+                                    {submissionPostLink ? (
+                                      <a href={submissionPostLink} target="_blank" rel="noopener noreferrer" className={influencerCardStyles.metaLink}>
+                                        {submissionData.postLink}
+                                      </a>
+                                    ) : (
+                                      submissionData.postLink
+                                    )}
+                                  </span>
+                                </p>
+                              ) : null}
+                              {submissionData?.screenshotLink ? (
+                                <p className={influencerCardStyles.meta}>
+                                  <span className={influencerCardStyles.metaLabel}>Screenshot:</span>{" "}
+                                  <span className={influencerCardStyles.metaValue}>
+                                    {submissionScreenshotLink ? (
+                                      <a href={submissionScreenshotLink} target="_blank" rel="noopener noreferrer" className={influencerCardStyles.metaLink}>
+                                        View Screenshot
+                                      </a>
+                                    ) : (
+                                      submissionData.screenshotLink
+                                    )}
+                                  </span>
+                                </p>
+                              ) : null}
+                              {submissionData?.caption ? (
+                                <p className={influencerCardStyles.meta}>
+                                  <span className={influencerCardStyles.metaLabel}>Caption:</span>{" "}
+                                  <span className={influencerCardStyles.metaValue}>{submissionCaption}</span>
+                                </p>
+                              ) : null}
                               <p className={influencerCardStyles.meta}>
                                 <span className={influencerCardStyles.metaLabel}>Submission date:</span>{" "}
                                 <span className={influencerCardStyles.metaValue}>{submissionDate}</span>
@@ -731,16 +775,16 @@ export default function CampaignApplicantsPage() {
                                   Reject
                                 </button>
                                 <a
-                                  href={submissionPostLink || "#"}
+                                  href={submissionReelLink || submissionPostLink || submissionScreenshotLink || "#"}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className={`${styles["manage-action-btn"]} ${styles["applicant-submission-view-btn"]}`.trim()}
-                                  aria-disabled={!submissionPostLink}
+                                  aria-disabled={!submissionReelLink && !submissionPostLink && !submissionScreenshotLink}
                                   onClick={(event) => {
-                                    if (!submissionPostLink) event.preventDefault();
+                                    if (!submissionReelLink && !submissionPostLink && !submissionScreenshotLink) event.preventDefault();
                                   }}
                                 >
-                                  View Post
+                                  View Content
                                 </a>
                               </div>
                             </>

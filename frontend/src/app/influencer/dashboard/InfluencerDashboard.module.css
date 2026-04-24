@@ -20,13 +20,15 @@
 }
 
 .topBar {
-  position: sticky;
+  /* position: sticky; */
+  position: fixed;
   top: 0;
   z-index: 50;
   width: 100%;
   border-bottom: 1px solid rgba(59, 130, 246, 0.1);
   background: rgba(11, 15, 25, 0.85);
   backdrop-filter: blur(10px);
+  
 }
 
 .navbarContainer {
@@ -833,6 +835,12 @@
   cursor: not-allowed;
 }
 
+.appliedBtn {
+  background: #10b981 !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 8px 18px rgba(16, 185, 129, 0.25) !important;
+}
+
 .completeProfileCard {
   margin-top: 12px;
   border: 1px solid rgba(245, 158, 11, 0.45);
@@ -942,6 +950,204 @@
   filter: brightness(1.06);
 }
 
+/* Submission Form Styles */
+.submissionFormCard {
+  margin-top: 20px;
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  background: rgba(59, 130, 246, 0.12);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.submissionFormHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.submissionFormHeader h3 {
+  margin: 0;
+  color: #dbeafe;
+  font-size: 1.25rem;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+}
+
+.closeBtn:hover {
+  background-color: rgba(156, 163, 175, 0.2);
+}
+
+.submissionFormGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroupFull {
+  grid-column: 1 / -1;
+}
+
+.formLabel {
+  margin-bottom: 6px;
+  color: #dbeafe;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.formInput {
+  padding: 10px 12px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  background: rgba(11, 15, 25, 0.8);
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.formTextarea {
+  padding: 10px 12px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  background: rgba(11, 15, 25, 0.8);
+  color: #ffffff;
+  font-size: 0.9rem;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.formTextarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.fileInput {
+  padding: 8px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  background: rgba(11, 15, 25, 0.8);
+  color: #ffffff;
+  font-size: 0.9rem;
+}
+
+.fileInput::-webkit-file-upload-button {
+  background: #3b82f6;
+  color: #ffffff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.fileInput::-webkit-file-upload-button:hover {
+  background: #2563eb;
+}
+
+.fileName {
+  margin-top: 4px;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.submissionFormActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.cancelBtn {
+  padding: 10px 16px;
+  border: 1px solid rgba(156, 163, 175, 0.5);
+  background: rgba(156, 163, 175, 0.1);
+  color: #9ca3af;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background: rgba(156, 163, 175, 0.2);
+}
+
+.submitBtn {
+  padding: 10px 16px;
+  border: none;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: filter 0.2s ease;
+}
+
+.submitBtn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.submitBtn:disabled {
+  background: #64748b;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.requiredText {
+  color: #ef4444;
+  font-weight: bold;
+}
+
+.optionalText {
+  color: #9ca3af;
+  font-weight: normal;
+  font-size: 0.8rem;
+}
+
+.formRequirements {
+  margin-bottom: 20px;
+  padding: 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+}
+
+.requirementsText {
+  margin: 0 0 4px;
+  color: #dbeafe;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.requirementsText:last-child {
+  margin-bottom: 0;
+}
+
 .quickAnalytics {
   background: linear-gradient(135deg, #1d4ed8, #2563eb);
 }
@@ -975,7 +1181,7 @@
 }
 
 .nextStepsCard {
-  margin-top: 14px;
+  margin-top: 89px;
   padding: 16px;
   border: 1px solid rgba(236, 72, 153, 0.2);
   background: rgba(20, 27, 42, 0.62);
