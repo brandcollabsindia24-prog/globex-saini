@@ -23,7 +23,7 @@ function isDashboardCreatedCampaign(description: string): boolean {
 
 function resolveApiBaseUrl(): string {
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  return process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5000`;
+  return process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5005`;
 }
 
 function parseCount(value: unknown[] | number | undefined): number {

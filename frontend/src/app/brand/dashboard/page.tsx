@@ -7,7 +7,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import styles from "./Dashboard.module.css";
 import type { BrandUser, Campaign, CampaignForm, RecommendedInfluencer } from "./types";
-import { clearAuthSession, getAuthSession } from "../../../lib/authStorage";
+import { clearAuthSession, getAuthSession, resolveApiBaseUrl } from "../../../lib/authStorage";
 import Navbar from "./components/Navbar";
 import StatsCards from "./components/StatsCards";
 import RecommendedInfluencers from "./components/RecommendedInfluencers";
@@ -63,7 +63,7 @@ const RECOMMENDED_INFLUENCERS: RecommendedInfluencer[] = [
 
 const SHORTLIST_STORAGE_KEY = "brandShortlistedInfluencers";
 const INFLUENCER_SHORTLIST_STORAGE_KEY = "brandInfluencerShortlist";
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+const API_BASE_URL = resolveApiBaseUrl();
 
 function normalizeWebsiteUrl(value: string): string {
   const trimmed = value.trim();

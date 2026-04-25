@@ -58,7 +58,7 @@ function isTokenExpiringSoon(token: string, bufferSeconds = EXPIRY_BUFFER_SECOND
 
 export function resolveApiBaseUrl(): string {
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  return process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5000`;
+  return process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5005`;
 }
 
 export function saveAuthSession<TUser extends StoredUser>(role: AppRole, token: string, user: TUser): void {
@@ -170,3 +170,4 @@ export function getRoleFromToken(token: string): AppRole | null {
   }
   return null;
 }
+

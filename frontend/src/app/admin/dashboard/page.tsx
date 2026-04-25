@@ -5,9 +5,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import styles from "./AdminDashboard.module.css";
-import { getAuthSession } from "../../../lib/authStorage";
+import { getAuthSession, resolveApiBaseUrl } from "../../../lib/authStorage";
 
 export default function AdminDashboardPage() {
+  const apiBaseUrl = resolveApiBaseUrl();
   const router = useRouter();
   const [totalBrands, setTotalBrands] = useState(0);
   const [totalCampaigns, setTotalCampaigns] = useState(0);
@@ -39,16 +40,16 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true);
       const [brandsRes, campaignsRes, profilesRes, contactsRes] = await Promise.all([
-        axios.get("http://localhost:5000/api/admin/brands", {
+        axios.get(`${apiBaseUrl}/api/admin/brands`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
-        axios.get("http://localhost:5000/api/admin/campaigns", {
+        axios.get(`${apiBaseUrl}/api/admin/campaigns`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
-        axios.get("http://localhost:5000/api/admin/influencer-profiles", {
+        axios.get(`${apiBaseUrl}/api/admin/influencer-profiles`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
-        axios.get("http://localhost:5000/api/admin/contacts", {
+        axios.get(`${apiBaseUrl}/api/admin/contacts`, {
           headers: { Authorization: `Bearer ${authToken}` },
         }),
       ]);

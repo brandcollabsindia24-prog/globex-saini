@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import styles from "./BrandInfluencers.module.css";
-import { getAuthSession } from "../../../lib/authStorage";
+import { getAuthSession, resolveApiBaseUrl } from "../../../lib/authStorage";
 
 type InfluencerProfile = {
   _id: string;
@@ -54,6 +54,7 @@ type ShortlistedInfluencer = {
 const INFLUENCER_SHORTLIST_STORAGE_KEY = "brandInfluencerShortlist";
 
 export default function InfluencersPage() {
+  const apiBaseUrl = resolveApiBaseUrl();
   const router = useRouter();
   const [profiles, setProfiles] = useState<InfluencerProfile[]>([]);
   const [searchText, setSearchText] = useState("");
@@ -126,7 +127,7 @@ export default function InfluencersPage() {
           return;
         }
 
-        const res = await axios.get("http://localhost:5000/api/influencers/brand/profiles/verified", {
+        const res = await axios.get(`${apiBaseUrl}/api/influencers/brand/profiles/verified`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

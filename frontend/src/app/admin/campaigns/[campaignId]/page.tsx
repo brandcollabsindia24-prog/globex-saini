@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import styles from "../AdminCampaigns.module.css";
-import { getAuthSession } from "../../../../lib/authStorage";
+import { getAuthSession, resolveApiBaseUrl } from "../../../../lib/authStorage";
 
 type Campaign = {
   _id: string;
@@ -42,6 +42,8 @@ function parseDescriptionIntro(description: string): string {
 }
 
 function resolveCampaignImageUrl(image?: string): string {
+  const apiBaseUrl = resolveApiBaseUrl();
+
   if (!image) return "";
 
   if (image.startsWith("http://") || image.startsWith("https://")) {
@@ -49,10 +51,10 @@ function resolveCampaignImageUrl(image?: string): string {
   }
 
   if (image.startsWith("/")) {
-    return `http://localhost:5000${image}`;
+    return `${apiBaseUrl}${image}`;
   }
 
-  return `http://localhost:5000/uploads/${image}`;
+  return `${apiBaseUrl}/uploads/${image}`;
 }
 
 export default function AdminCampaignDetailsPage() {
@@ -74,7 +76,7 @@ export default function AdminCampaignDetailsPage() {
 
     const load = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/admin/campaigns", {
+        const response = await axios.get(`${resolveApiBaseUrl()}/api/admin/campaigns`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -121,7 +123,7 @@ export default function AdminCampaignDetailsPage() {
 
     try {
       setDeleting(true);
-      await axios.delete(`http://localhost:5000/api/admin/campaigns/${params.campaignId}`, {
+      await axios.delete(`${resolveApiBaseUrl()}/api/admin/campaigns/${params.campaignId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

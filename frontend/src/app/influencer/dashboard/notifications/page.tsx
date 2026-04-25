@@ -14,7 +14,7 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
 
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5000`;
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5005`;
 
   const loadNotifications = async () => {
     const response = await authFetchJson<{ notifications?: DashboardPayload["notifications"] }>(
@@ -72,3 +72,4 @@ export default function NotificationsPage() {
     </PageShell>
   );
 }
+

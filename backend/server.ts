@@ -75,6 +75,7 @@ import contactRoutes from "./routes/contactRoutes"
 dotenv.config()
 
 const app = express()
+const port = Number(process.env.PORT || 5005)
 
 const envOrigins = (process.env.CORS_ORIGINS || process.env.FRONTEND_URL || "")
   .split(",")
@@ -139,6 +140,6 @@ app.get("/", (req, res) => {
 })
 
 // Server start
-app.listen(5000, () => {
-  console.log("Server running on port 5000")
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`)
 })

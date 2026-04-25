@@ -38,7 +38,7 @@ const PLATFORM_ORDER = ["instagram", "youtube", "facebook"] as const;
 
 function resolveApiBaseUrl(): string {
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  return process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5000`;
+  return process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5005`;
 }
 
 function resolveCampaignImageUrl(imageFile?: string): string {
@@ -51,7 +51,7 @@ function resolveCampaignImageUrl(imageFile?: string): string {
   if (/^https?:\/\//i.test(normalized)) {
     // If DB has localhost URL and app is opened from LAN IP, rewrite host for visibility on other devices.
     const currentHost = typeof window !== "undefined" ? window.location.hostname : "localhost";
-    return normalized.replace(/https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, `http://${currentHost}:5000`);
+    return normalized.replace(/https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i, `http://${currentHost}:5005`);
   }
 
   if (normalized.startsWith("/")) {
@@ -152,8 +152,8 @@ export default function AdminCampaignsPage() {
     try {
       setLoading(true);
       const url = brandId
-        ? `http://localhost:5000/api/admin/campaigns?brandId=${brandId}`
-        : "http://localhost:5000/api/admin/campaigns";
+        ? `${resolveApiBaseUrl()}/api/admin/campaigns?brandId=${brandId}`
+        : `${resolveApiBaseUrl()}/api/admin/campaigns`;
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
@@ -270,7 +270,7 @@ export default function AdminCampaignsPage() {
 
     const fetchInitial = async () => {
       try {
-        const brandsResponse = await axios.get("http://localhost:5000/api/admin/brands", {
+        const brandsResponse = await axios.get(`${resolveApiBaseUrl()}/api/admin/brands`, {
           headers: { Authorization: `Bearer ${authToken}` },
         });
         setBrands(brandsResponse.data?.brands || []);
@@ -438,3 +438,4 @@ export default function AdminCampaignsPage() {
     </main>
   );
 }
+

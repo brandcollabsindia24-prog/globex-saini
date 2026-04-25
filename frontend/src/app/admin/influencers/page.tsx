@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import styles from "./AdminInfluencers.module.css";
-import { getAuthSession } from "../../../lib/authStorage";
+import { getAuthSession, resolveApiBaseUrl } from "../../../lib/authStorage";
 
 type InfluencerProfile = {
   _id: string;
@@ -24,6 +24,7 @@ type InfluencerProfile = {
 };
 
 export default function AdminInfluencersPage() {
+  const apiBaseUrl = resolveApiBaseUrl();
   const router = useRouter();
   const [profiles, setProfiles] = useState<InfluencerProfile[]>([]);
   const [filteredProfiles, setFilteredProfiles] = useState<InfluencerProfile[]>([]);
@@ -59,7 +60,7 @@ export default function AdminInfluencersPage() {
       }
 
       setLoading(true);
-      const res = await axios.get(`http://localhost:5000/api/influencers/admin/profiles?status=${status}`, {
+      const res = await axios.get(`${apiBaseUrl}/api/influencers/admin/profiles?status=${status}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -87,7 +88,7 @@ export default function AdminInfluencersPage() {
       }
 
       await axios.patch(
-        `http://localhost:5000/api/influencers/admin/profiles/${profileId}/verification-status`,
+        `${apiBaseUrl}/api/influencers/admin/profiles/${profileId}/verification-status`,
         { verificationStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );

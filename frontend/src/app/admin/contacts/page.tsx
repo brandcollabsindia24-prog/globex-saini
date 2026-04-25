@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import styles from "./AdminContacts.module.css";
-import { getAuthSession } from "../../../lib/authStorage";
+import { getAuthSession, resolveApiBaseUrl } from "../../../lib/authStorage";
 
 type ContactItem = {
   _id: string;
@@ -19,6 +19,7 @@ type ContactItem = {
 };
 
 export default function AdminContactsPage() {
+  const apiBaseUrl = resolveApiBaseUrl();
   const router = useRouter();
   const [contacts, setContacts] = useState<ContactItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +39,7 @@ export default function AdminContactsPage() {
     const fetchContacts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:5000/api/admin/contacts", {
+        const response = await axios.get(`${apiBaseUrl}/api/admin/contacts`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setContacts(response.data?.contacts || []);

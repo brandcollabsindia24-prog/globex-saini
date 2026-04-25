@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import styles from "./AdminBrands.module.css";
-import { getAuthSession } from "../../../lib/authStorage";
+import { getAuthSession, resolveApiBaseUrl } from "../../../lib/authStorage";
 
 type Brand = {
   _id: string;
@@ -72,10 +72,10 @@ export default function AdminBrandsPage() {
     const fetchBrands = async () => {
       try {
         const [brandsResponse, campaignsResponse] = await Promise.all([
-          axios.get("http://localhost:5000/api/admin/brands", {
+          axios.get(`${resolveApiBaseUrl()}/api/admin/brands`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:5000/api/admin/campaigns", {
+          axios.get(`${resolveApiBaseUrl()}/api/admin/campaigns`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);

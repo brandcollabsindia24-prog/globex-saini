@@ -59,7 +59,7 @@ function InfluencerDashboardClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5000`;
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5005`;
 
   const [dashboard, setDashboard] = useState(EMPTY_DASHBOARD);
   const [availableCampaigns, setAvailableCampaigns] = useState<Campaign[]>([]);
@@ -847,3 +847,4 @@ export default function InfluencerDashboard() {
     </Suspense>
   );
 }
+

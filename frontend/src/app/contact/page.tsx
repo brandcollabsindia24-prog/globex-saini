@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Footer from "@/components/Footer";
+import { resolveApiBaseUrl } from "@/lib/authStorage";
 import styles from "./Contact.module.css";
 
 type ContactForm = {
@@ -23,6 +24,7 @@ const initialForm: ContactForm = {
 };
 
 export default function ContactPage() {
+  const apiBaseUrl = resolveApiBaseUrl();
   const [form, setForm] = useState<ContactForm>(initialForm);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -62,7 +64,7 @@ export default function ContactPage() {
 
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/contacts/submit", {
+      const response = await fetch(`${apiBaseUrl}/api/contacts/submit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

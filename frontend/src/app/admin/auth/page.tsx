@@ -12,7 +12,7 @@ export default function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const host = typeof window !== "undefined" ? window.location.hostname : "localhost";
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5000`;
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || `http://${host}:5005`;
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
